@@ -6,8 +6,14 @@
 
     <groupId>org.example</groupId>
     <artifactId>modern</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
+    <version>0.1-SNAPSHOT</version>
+    <repositories>
+        <repository>
+            <id>maven-1</id>
+            <name>maven-1</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
+    </repositories>
     <properties>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
@@ -62,7 +68,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.9</version>
+                <version>4.9.8.0</version>
                 <configuration>
                     <effort>Max</effort>
                     <threshold>medium</threshold>

@@ -26,9 +26,11 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
+//import java.util.Random;
 
 public class CertAndKeyStore {
     private static final String BC_PROVIDER = "BC";
+    private static final String BX_PROVIDER = "BX";
     private static final String KEY_ALGORITHM = "RSA";
     private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
 
@@ -52,8 +54,9 @@ public class CertAndKeyStore {
         // First Generate a KeyPair,
         // then a random serial number
         // then generate a certificate using the KeyPair
+        java.util.Random rr =new SecureRandom();
         KeyPair rootKeyPair = keyPairGenerator.generateKeyPair();
-        BigInteger rootSerialNum = new BigInteger(Long.toString(new SecureRandom().nextLong()));
+        BigInteger rootSerialNum = new BigInteger(Long.toString(rr.nextLong()));
 
         // Issued By and Issued To same for root certificate
         X500Name rootCertIssuer = new X500Name("CN=root-cert");
@@ -77,7 +80,7 @@ public class CertAndKeyStore {
         // Generate a new KeyPair and sign it using the Root Cert Private Key
         // by generating a CSR (Certificate Signing Request)
         X500Name issuedCertSubject = new X500Name("CN=issued-cert");
-        BigInteger issuedCertSerialNum = new BigInteger(Long.toString(new SecureRandom().nextLong()));
+        BigInteger issuedCertSerialNum = new BigInteger(Long.toString(rr.nextLong()));
         KeyPair issuedCertKeyPair = keyPairGenerator.generateKeyPair();
 
         PKCS10CertificationRequestBuilder p10Builder = new JcaPKCS10CertificationRequestBuilder(issuedCertSubject, issuedCertKeyPair.getPublic());
@@ -124,12 +127,27 @@ public class CertAndKeyStore {
     }
 
     static void exportKeyPairToKeystoreFile(KeyPair keyPair, Certificate certificate, String alias, String fileName, String storeType, String storePass) throws Exception {
-        KeyStore sslKeyStore = KeyStore.getInstance(storeType, BC_PROVIDER);
-        sslKeyStore.load(null, null);
-        sslKeyStore.setKeyEntry(alias, keyPair.getPrivate(),null, new Certificate[]{certificate});
-        FileOutputStream keyStoreOs = new FileOutputStream(fileName);
-        sslKeyStore.store(keyStoreOs, storePass.toCharArray());
+        try {
+            KeyStore sslKeyStore = KeyStore.getInstance(storeType, BX_PROVIDER);
+            sslKeyStore.load(null, null);
+            sslKeyStore.setKeyEntry(alias, keyPair.getPrivate(), null, new Certificate[]{certificate});
+            FileOutputStream keyStoreOs = new FileOutputStream(fileName);
+            sslKeyStore.store(keyStoreOs, storePass.toCharArray());
+        } catch (java.security.KeyStoreException kse) {
+            System.out.println("KeyStore Exception: " + kse.getMessage());
+            return;
+        } catch (java.security.NoSuchProviderException nspe) {
+            System.out.println("!! No Such Provider Exception: " + nspe.getMessage());
+            return;
+        } catch (java.io.FileNotFoundException fnfe) {
+            System.out.println("!! File Not Found Exception: " + fnfe.getMessage());
+            return;
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
+
+
 
     static void writeCertToFileBase64Encoded(Certificate certificate, String fileName) throws Exception {
         FileOutputStream certificateOut = new FileOutputStream(fileName);
