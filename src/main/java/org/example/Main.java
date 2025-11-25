@@ -5,8 +5,10 @@ import java.security.Security;
 import javax.crypto.Cipher;
 import java.security.Provider;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.security.cert.CertificateFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.cert.X509CertificateHolder;
 
 
 public class Main {
